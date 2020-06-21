@@ -1,19 +1,31 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Provider } from 'react-redux';
+import { AppLoading } from 'expo';
+import { Alert  } from 'react-native';
+
+import { fonts } from './src/utils/fonts';
+import { Routes } from './src/navigation/Routes';
+import { WrapCenter } from './src/components/UI/WrapCenter';
+import { store } from './src/redux/store';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-    </View>
-  );
-}
+  const [isReady, setIsReady] = useState(false);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  if (!isReady) {
+    return (
+      <WrapCenter>
+        <AppLoading
+          startAsync={fonts}
+          onError={() => Alert.alert('Something went wrong, try again later!')}
+          onFinish={() => setIsReady(true)}
+        />
+      </WrapCenter>
+    );
+  }
+
+  return (
+    <Provider store={store}>
+      <Routes />
+    </Provider>
+  );
+};
