@@ -2,6 +2,7 @@ import { AsyncStorage } from 'react-native';
 import { Alert } from 'react-native';
 
 import { apiCall } from '../../utils/api-call';
+import { isNetworkError } from '../../utils/isNetworkError';
 import { 
   LOAD_POSTS,
   ADD_POST,
@@ -36,10 +37,12 @@ export const postsLoaded = () => async dispatch => {
       postList
     });
   } catch (e) {
-    dispatch({
-      type: SHOW_ERROR,
-      error: e.message
-    });
+    if (!isNetworkError(e)) {
+      dispatch({
+        type: SHOW_ERROR,
+        error: e.message
+      });
+    }
   } finally {
     dispatch({ type: HIDE_LOADER });
   }
