@@ -2,7 +2,6 @@ import { AsyncStorage } from 'react-native';
 import { Alert } from 'react-native';
 
 import { apiCall } from '../../utils/api-call';
-import { isNetworkError } from '../../utils/isNetworkError';
 import { 
   LOAD_POSTS,
   ADD_POST,
@@ -22,9 +21,9 @@ export const postsLoaded = () => async dispatch => {
   dispatch({ type: SHOW_LOADER });
 
   try {
-    const { data } = await apiCall('db');
+    const data = await apiCall('db');
     
-    const postList = data.posts.map(item => ({
+    const postList = (data.posts || []).map(item => ({
       ...item,
       author: data.users.find(user => user.id === item.author),
       comments: data.comments
@@ -37,12 +36,10 @@ export const postsLoaded = () => async dispatch => {
       postList
     });
   } catch (e) {
-    if (!isNetworkError(e)) {
-      dispatch({
-        type: SHOW_ERROR,
-        error: e.message
-      });
-    }
+    dispatch({
+      type: SHOW_ERROR,
+      error: e.message
+    });
   } finally {
     dispatch({ type: HIDE_LOADER });
   }
@@ -117,39 +114,39 @@ export const checkUserIsLogin = () => async dispatch => {
 export const addPost = post => async (dispatch, getState) => {
   dispatch({ type: SHOW_LOADER });
   const { user } = getState().posts;
-  const { status } = await apiCall('posts', 'POST', post);
 
-  if (status === 201) {
-    const newPost = {
-      ...post,
-      author: user,
-      comments: []
-    };
-    
-    dispatch({
-      type: ADD_POST,
-      newPost
-    });
-  }
+  await apiCall('posts', 'POST', post);
+
+  const newPost = {
+    ...post,
+    author: user,
+    comments: []
+  };
+  
+  dispatch({
+    type: ADD_POST,
+    newPost
+  });
+
   dispatch({ type: HIDE_LOADER });
 };
 
 export const addComment = comment => async (dispatch, getState) => {
   dispatch({ type: SHOW_LOADER });
   const { user } = getState().posts;
-  const { status } = await apiCall('comments', 'POST', comment);
 
-  if (status === 201) {
-    const newComment = {
-      ...comment,
-      author: user
-    };
-    
-    dispatch({
-      type: ADD_COMMENT,
-      newComment
-    });
-  }
+  await apiCall('comments', 'POST', comment);
+
+  const newComment = {
+    ...comment,
+    author: user
+  };
+  
+  dispatch({
+    type: ADD_COMMENT,
+    newComment
+  });
+
   dispatch({ type: HIDE_LOADER });
 };
 
